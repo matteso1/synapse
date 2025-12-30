@@ -2,7 +2,7 @@
 
 A real-time collaborative whiteboard built with React, TypeScript, and CRDTs. Multiple users can draw together on an infinite canvas with instant synchronization and conflict-free merging.
 
-[Live Demo](https://synapse.nilsmatteson.com) | [Architecture](#architecture) | [Getting Started](#getting-started)
+[Architecture](#architecture) | [Getting Started](#getting-started)
 
 ---
 
