@@ -1,137 +1,147 @@
 # Synapse
 
-<div align="center">
-  <img src="client/public/synapse.svg" width="80" height="80" alt="Synapse Logo">
-  <h3>Real-time Collaborative Whiteboard</h3>
-  <p><em>Draw together in real-time with conflict-free synchronization</em></p>
-  
-  <p>
-    <a href="https://synapse.nilsmatteson.com">Live Demo</a> •
-    <a href="#features">Features</a> •
-    <a href="#tech-stack">Tech Stack</a> •
-    <a href="#architecture">Architecture</a>
-  </p>
-</div>
+A real-time collaborative whiteboard built with React, TypeScript, and CRDTs. Multiple users can draw together on an infinite canvas with instant synchronization and conflict-free merging.
+
+[Live Demo](https://synapse.nilsmatteson.com) | [Architecture](#architecture) | [Getting Started](#getting-started)
 
 ---
 
-## ✨ Features
+## Features
 
-- **🎨 Freehand Drawing** — Smooth pen tool with adjustable colors and stroke width
-- **👥 Real-time Cursors** — See other users' cursors moving live
-- **⚡ Instant Sync** — CRDTs (Yjs) ensure conflict-free collaboration
-- **🔗 Easy Sharing** — Short room codes to invite collaborators
-- **♾️ Infinite Canvas** — Zoom and pan to explore unlimited space
-- **🌙 Dark Theme** — Beautiful modern UI with glassmorphism effects
-
----
-
-## 🛠️ Tech Stack
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         FRONTEND                                 │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │   React 18  │  │ TypeScript  │  │    HTML5 Canvas API     │  │
-│  │   + Vite    │  │   Strict    │  │ (Hardware Accelerated)  │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │   Zustand   │  │     Yjs     │  │      y-websocket        │  │
-│  │    Store    │  │    CRDT     │  │   (Real-time Sync)      │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              │ WebSocket
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                         BACKEND                                  │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │              Node.js WebSocket Server                    │    │
-│  │    • Yjs document sync & awareness protocol              │    │
-│  │    • Room-based multiplayer sessions                     │    │
-│  │    • Scales horizontally with Redis Pub/Sub              │    │
-│  └─────────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────────┘
-```
+- **Real-time Collaboration** — Multiple users draw simultaneously with instant sync
+- **Conflict-Free Replication** — Yjs CRDTs ensure consistent state across all clients
+- **Live Cursors** — See other users' cursor positions in real-time
+- **Infinite Canvas** — Pan and zoom to explore unlimited drawing space
+- **Room-Based Sessions** — Share a 6-character code to invite collaborators
 
 ---
 
-## 🏗️ Architecture
+## Tech Stack
 
-```
-                    ┌──────────────────────────────────────────────────┐
-                    │                   SYNAPSE                         │
-                    │           Collaborative Whiteboard                │
-                    └──────────────────────────────────────────────────┘
-                                         │
-           ┌─────────────────────────────┼─────────────────────────────┐
-           │                             │                             │
-           ▼                             ▼                             ▼
-   ┌───────────────┐            ┌───────────────┐            ┌───────────────┐
-   │   Browser 1   │            │   Browser 2   │            │   Browser N   │
-   │               │            │               │            │               │
-   │  ┌─────────┐  │            │  ┌─────────┐  │            │  ┌─────────┐  │
-   │  │ Canvas  │  │            │  │ Canvas  │  │            │  │ Canvas  │  │
-   │  │  Render │  │            │  │  Render │  │            │  │  Render │  │
-   │  └────┬────┘  │            │  └────┬────┘  │            │  └────┬────┘  │
-   │       │       │            │       │       │            │       │       │
-   │  ┌────▼────┐  │            │  ┌────▼────┐  │            │  ┌────▼────┐  │
-   │  │  Yjs    │  │            │  │  Yjs    │  │            │  │  Yjs    │  │
-   │  │  Doc    │◄─┼────────────┼─►│  Doc    │◄─┼────────────┼─►│  Doc    │  │
-   │  └────┬────┘  │            │  └────┬────┘  │            │  └────┬────┘  │
-   │       │       │            │       │       │            │       │       │
-   └───────┼───────┘            └───────┼───────┘            └───────┼───────┘
-           │                            │                            │
-           │         WebSocket          │         WebSocket          │
-           │                            │                            │
-           └────────────────────────────┼────────────────────────────┘
-                                        │
-                                        ▼
-                          ┌─────────────────────────┐
-                          │    WebSocket Server     │
-                          │                         │
-                          │  • Room Management      │
-                          │  • Yjs Sync Protocol    │
-                          │  • Awareness Broadcast  │
-                          │                         │
-                          └────────────┬────────────┘
-                                       │
-                                       ▼
-                          ┌─────────────────────────┐
-                          │    Redis (Optional)     │
-                          │                         │
-                          │  • Pub/Sub for scaling  │
-                          │  • Session persistence  │
-                          │                         │
-                          └─────────────────────────┘
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| Frontend | React 18, TypeScript, Vite | UI and rendering |
+| Canvas | HTML5 Canvas API | Hardware-accelerated drawing |
+| State | Zustand | Local state management |
+| Sync | Yjs + y-websocket | CRDT-based real-time sync |
+| Backend | Node.js, WebSocket | Room management and message relay |
+
+---
+
+## Architecture
+
+### System Overview
+
+```mermaid
+flowchart TB
+    subgraph Clients["Browser Clients"]
+        C1["Client 1<br/>Canvas + Yjs Doc"]
+        C2["Client 2<br/>Canvas + Yjs Doc"]
+        C3["Client N<br/>Canvas + Yjs Doc"]
+    end
+
+    subgraph Server["WebSocket Server"]
+        WS["Room Manager"]
+        SYNC["Yjs Sync Protocol"]
+        AWARE["Awareness Protocol"]
+    end
+
+    C1 <-->|WebSocket| WS
+    C2 <-->|WebSocket| WS
+    C3 <-->|WebSocket| WS
+
+    WS --> SYNC
+    WS --> AWARE
 ```
 
-### How CRDTs Enable Real-time Collaboration
+### Data Flow
 
+```mermaid
+sequenceDiagram
+    participant A as User A
+    participant S as Server
+    participant B as User B
+
+    A->>S: Draw stroke (Yjs update)
+    S->>B: Broadcast update
+    B->>B: Apply to local doc
+    
+    Note over A,B: Both users see the same result<br/>regardless of network latency
+    
+    B->>S: Draw stroke (Yjs update)
+    S->>A: Broadcast update
+    A->>A: Apply to local doc
 ```
-User A draws                User B draws              Conflict-free merge
-    │                           │                           │
-    ▼                           ▼                           ▼
-┌─────────┐               ┌─────────┐               ┌─────────────────┐
-│ Stroke  │               │ Stroke  │               │  Both strokes   │
-│   A1    │               │   B1    │               │   preserved     │
-└────┬────┘               └────┬────┘               │   correctly!    │
-     │                         │                    └─────────────────┘
-     │    ┌─────────────┐      │                           ▲
-     └───►│    CRDT     │◄─────┘                           │
-          │   Merge     │──────────────────────────────────┘
-          │  Algorithm  │
-          └─────────────┘
+
+### CRDT Conflict Resolution
+
+```mermaid
+flowchart LR
+    subgraph UserA["User A"]
+        A1["Draws circle"]
+    end
+
+    subgraph UserB["User B"]
+        B1["Draws square"]
+    end
+
+    subgraph Merge["CRDT Merge"]
+        M["Both shapes<br/>preserved"]
+    end
+
+    A1 --> M
+    B1 --> M
+
+    M --> Result["Final Canvas:<br/>Circle + Square"]
+```
+
+### Component Architecture
+
+```mermaid
+flowchart TB
+    subgraph Frontend["React Frontend"]
+        App["App.tsx"]
+        Canvas["Canvas.tsx"]
+        Toolbar["Toolbar.tsx"]
+        Presence["UserPresence.tsx"]
+    end
+
+    subgraph Hooks["Custom Hooks"]
+        UseYjs["useYjs()"]
+    end
+
+    subgraph State["State Management"]
+        Store["Zustand Store"]
+        YDoc["Yjs Document"]
+    end
+
+    subgraph Render["Rendering"]
+        Renderer["Canvas Renderer"]
+        Grid["Grid Layer"]
+        Objects["Object Layer"]
+        Cursors["Cursor Layer"]
+    end
+
+    App --> Canvas
+    App --> Toolbar
+    App --> Presence
+    Canvas --> UseYjs
+    UseYjs --> Store
+    UseYjs --> YDoc
+    Canvas --> Renderer
+    Renderer --> Grid
+    Renderer --> Objects
+    Renderer --> Cursors
 ```
 
 ---
 
-## 🚀 Quick Start
+## Getting Started
 
 ### Prerequisites
 
-- **Node.js** 18+ — [Install](https://nodejs.org/)
-- **Git** — [Install](https://git-scm.com/)
+- Node.js 18+
+- Git
 
 ### Local Development
 
@@ -144,76 +154,87 @@ cd synapse
 cd ws-server
 npm install
 npm start
-# Server runs on ws://localhost:1234
 
 # In a new terminal, start the frontend
 cd client
 npm install
 npm run dev
-# Opens http://localhost:5173
 ```
 
-### Collaborate
+The frontend runs at `http://localhost:5173` and connects to the WebSocket server at `ws://localhost:1234`.
 
-1. Click **Create New Room**
-2. Share the room code with a friend
-3. Draw together in real-time! 🎨
+### Usage
+
+1. Open the app and click **Create New Room**
+2. Share the 6-character room code with collaborators
+3. Draw together in real-time
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 synapse/
-├── client/                 # React + TypeScript frontend
+├── client/                 # React frontend
 │   ├── src/
 │   │   ├── components/     # Canvas, Toolbar, UserPresence
 │   │   ├── hooks/          # useYjs (CRDT integration)
-│   │   ├── stores/         # Zustand state management
-│   │   ├── lib/            # Canvas rendering utilities
+│   │   ├── stores/         # Zustand state
+│   │   ├── lib/            # Canvas rendering
 │   │   └── types/          # TypeScript definitions
 │   └── package.json
 │
 ├── ws-server/              # Node.js WebSocket server
-│   ├── server.js           # Yjs sync & room management
+│   ├── server.js           # Yjs sync and room management
 │   └── package.json
 │
-├── server/                 # Rust backend (production)
-│   ├── src/
-│   │   ├── main.rs         # Actix-web server
-│   │   ├── room.rs         # Room management
-│   │   └── protocol.rs     # Message types
-│   └── Cargo.toml
-│
-└── docker-compose.yml      # Local dev with Redis
+└── server/                 # Rust backend (production)
+    ├── src/
+    │   ├── main.rs         # Actix-web server
+    │   ├── room.rs         # Room management
+    │   └── protocol.rs     # Message types
+    └── Cargo.toml
 ```
 
 ---
 
-## 🎯 Roadmap
+## Deployment
 
-- [x] Freehand drawing with pen tool
-- [x] Real-time cursor sharing
-- [x] Yjs CRDT integration
-- [x] User presence indicators
-- [x] Room codes for collaboration
-- [ ] Shape tools (rectangle, ellipse, arrow)
-- [ ] Selection and transforms
-- [ ] Undo/redo history
-- [ ] Export to PNG/SVG
-- [ ] Mobile touch support
-
----
-
-## 🌐 Deployment
-
-| Service | Platform | URL |
-|---------|----------|-----|
+| Component | Platform | URL |
+|-----------|----------|-----|
 | Frontend | Vercel | synapse.nilsmatteson.com |
 | WebSocket | Railway | wss://synapse-ws.up.railway.app |
 
+### Environment Variables
+
+**Frontend (Vercel):**
+
+```
+VITE_WS_URL=wss://your-railway-domain.up.railway.app
+```
+
+**Backend (Railway):**
+
+```
+PORT=8080  # Set automatically by Railway
+```
+
 ---
 
-## 📄 License
+## Roadmap
 
-MIT © [Nils Matteson](https://nilsmatteson.com)
+- [x] Freehand drawing
+- [x] Real-time cursor sharing
+- [x] Yjs CRDT integration
+- [x] User presence indicators
+- [x] Room-based collaboration
+- [ ] Shape tools (rectangle, ellipse, line)
+- [ ] Selection and transformation
+- [ ] Undo/redo history
+- [ ] Export to PNG/SVG
+
+---
+
+## License
+
+MIT
