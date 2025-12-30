@@ -1,0 +1,31 @@
+# Synapse Development Environment
+
+services:
+  # Redis for Pub/Sub (horizontal scaling)
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Rust Backend (development)
+  # Uncomment when ready to containerize
+  # server:
+  #   build: ./server
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - RUST_LOG=info
+  #     - REDIS_URL=redis://redis:6379
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+
+volumes:
+  redis_data:
