@@ -17,7 +17,8 @@ import {
     Square,
     Circle,
     Minus,
-    ArrowRight
+    ArrowRight,
+    Type
 } from 'lucide-react';
 import { useCanvasStore, COLOR_PALETTE, STROKE_WIDTHS } from '../stores/canvasStore';
 import type { Tool } from '../types';
@@ -50,6 +51,7 @@ export function Toolbar({ onClear, onLeave, onDownload, onUndo, onRedo, roomId, 
         { id: 'ellipse', icon: <Circle size={20} />, label: 'Ellipse' },
         { id: 'line', icon: <Minus size={20} />, label: 'Line' },
         { id: 'arrow', icon: <ArrowRight size={20} />, label: 'Arrow' },
+        { id: 'text', icon: <Type size={20} />, label: 'Text' },
         { id: 'pan', icon: <Hand size={20} />, label: 'Pan' },
     ];
 

@@ -3,7 +3,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { useCanvasStore } from '../stores/canvasStore';
 import { renderObject, renderGrid, renderCursors, generateId } from '../lib/renderer';
-import type { Point, PathObject, AnyCanvasObject, RectangleObject, EllipseObject, LineObject, ArrowObject } from '../types';
+import type { Point, PathObject, AnyCanvasObject, RectangleObject, EllipseObject, LineObject, ArrowObject, TextObject } from '../types';
 
 interface CanvasProps {
     canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -146,7 +146,27 @@ export function Canvas({ canvasRef, addObject, updateObject: _updateObject, upda
             setIsDrawing(true);
             setShapeStart(point);
         }
-    }, [tool, color, strokeWidth, localUserId, screenToCanvas]);
+
+        // Text tool - prompt for text content
+        if (tool === 'text') {
+            const text = window.prompt('Enter text:');
+            if (text && text.trim()) {
+                const textObj: TextObject = {
+                    id: generateId(),
+                    type: 'text',
+                    x: point.x,
+                    y: point.y,
+                    content: text.trim(),
+                    fontSize: 20,
+                    color,
+                    strokeWidth: 1,
+                    createdBy: localUserId || 'unknown',
+                    createdAt: Date.now(),
+                };
+                addObject(textObj);
+            }
+        }
+    }, [tool, color, strokeWidth, localUserId, screenToCanvas, addObject]);
 
     // Handle mouse move
     const handleMouseMove = useCallback((e: React.MouseEvent) => {

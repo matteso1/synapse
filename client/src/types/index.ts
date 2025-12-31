@@ -7,7 +7,7 @@ export interface Point {
 
 export interface CanvasObject {
     id: string;
-    type: 'path' | 'rectangle' | 'ellipse' | 'line' | 'arrow';
+    type: 'path' | 'rectangle' | 'ellipse' | 'line' | 'arrow' | 'text';
     color: string;
     strokeWidth: number;
     createdBy: string;
@@ -53,7 +53,15 @@ export interface ArrowObject extends CanvasObject {
     y2: number;
 }
 
-export type AnyCanvasObject = PathObject | RectangleObject | EllipseObject | LineObject | ArrowObject;
+export interface TextObject extends CanvasObject {
+    type: 'text';
+    x: number;
+    y: number;
+    content: string;
+    fontSize: number;
+}
+
+export type AnyCanvasObject = PathObject | RectangleObject | EllipseObject | LineObject | ArrowObject | TextObject;
 
 // User presence types
 export interface UserPresence {
@@ -65,7 +73,7 @@ export interface UserPresence {
 }
 
 // Tool types
-export type Tool = 'pen' | 'eraser' | 'rectangle' | 'ellipse' | 'line' | 'arrow' | 'select' | 'pan';
+export type Tool = 'pen' | 'eraser' | 'rectangle' | 'ellipse' | 'line' | 'arrow' | 'text' | 'select' | 'pan';
 
 // WebSocket message types
 export interface CursorMoveMessage {

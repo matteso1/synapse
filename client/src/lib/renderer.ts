@@ -1,6 +1,6 @@
 // Canvas rendering utilities
 
-import type { AnyCanvasObject, PathObject, RectangleObject, EllipseObject, LineObject } from '../types';
+import type { AnyCanvasObject, PathObject, RectangleObject, EllipseObject, LineObject, TextObject } from '../types';
 
 export function renderObject(ctx: CanvasRenderingContext2D, obj: AnyCanvasObject) {
     ctx.strokeStyle = obj.color;
@@ -21,6 +21,9 @@ export function renderObject(ctx: CanvasRenderingContext2D, obj: AnyCanvasObject
         case 'line':
         case 'arrow':
             renderLine(ctx, obj as LineObject);
+            break;
+        case 'text':
+            renderText(ctx, obj as TextObject);
             break;
     }
 }
@@ -89,6 +92,13 @@ function renderLine(ctx: CanvasRenderingContext2D, line: LineObject | import('..
         );
         ctx.stroke();
     }
+}
+
+function renderText(ctx: CanvasRenderingContext2D, text: TextObject) {
+    ctx.font = `${text.fontSize}px Inter, sans-serif`;
+    ctx.fillStyle = text.color;
+    ctx.textBaseline = 'top';
+    ctx.fillText(text.content, text.x, text.y);
 }
 
 // Render grid background
