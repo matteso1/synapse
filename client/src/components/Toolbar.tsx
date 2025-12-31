@@ -9,7 +9,9 @@ import {
     Users,
     LogOut,
     Copy,
-    Check
+    Check,
+    Download,
+    Link
 } from 'lucide-react';
 import { useCanvasStore, COLOR_PALETTE, STROKE_WIDTHS } from '../stores/canvasStore';
 import type { Tool } from '../types';
@@ -17,18 +19,19 @@ import type { Tool } from '../types';
 interface ToolbarProps {
     onClear: () => void;
     onLeave: () => void;
+    onDownload: () => void;
     roomId: string;
     userCount: number;
     isConnected: boolean;
 }
 
-export function Toolbar({ onClear, onLeave, roomId, userCount, isConnected }: ToolbarProps) {
+export function Toolbar({ onClear, onLeave, onDownload, roomId, userCount, isConnected }: ToolbarProps) {
     const { tool, setTool, color, setColor, strokeWidth, setStrokeWidth, zoom } = useCanvasStore();
     const [copied, setCopied] = useState(false);
 
-    const copyRoomCode = async () => {
-        // Copy room code to clipboard
-        await navigator.clipboard.writeText(roomId);
+    const copyInviteLink = async () => {
+        // Copy full invite URL to clipboard
+        await navigator.clipboard.writeText(window.location.href);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -54,7 +57,7 @@ export function Toolbar({ onClear, onLeave, roomId, userCount, isConnected }: To
                     <span className="status-dot"></span>
                     <span className="status-text">{isConnected ? 'Connected' : 'Connecting...'}</span>
                 </div>
-                <div className="room-code" onClick={copyRoomCode} title="Click to copy room code">
+                <div className="room-code" onClick={copyInviteLink} title="Click to copy invite link">
                     <span className="room-label">Room:</span>
                     <span className="room-id">{roomId}</span>
                     {copied ? <Check size={14} className="copy-icon" /> : <Copy size={14} className="copy-icon" />}
@@ -113,6 +116,12 @@ export function Toolbar({ onClear, onLeave, roomId, userCount, isConnected }: To
 
             {/* Actions */}
             <div className="toolbar-section">
+                <button className="tool-button" onClick={onDownload} title="Download as PNG">
+                    <Download size={20} />
+                </button>
+                <button className="tool-button" onClick={copyInviteLink} title="Copy Invite Link">
+                    {copied ? <Check size={20} /> : <Link size={20} />}
+                </button>
                 <button className="tool-button danger" onClick={onClear} title="Clear Canvas">
                     <Trash2 size={20} />
                 </button>

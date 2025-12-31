@@ -161,6 +161,7 @@ interface WhiteboardRoomProps {
 
 function WhiteboardRoom({ roomId, userName, onLeave }: WhiteboardRoomProps) {
   const { users } = useCanvasStore();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Connect to Yjs
   const {
@@ -181,17 +182,35 @@ function WhiteboardRoom({ roomId, userName, onLeave }: WhiteboardRoomProps) {
     }
   };
 
+  const handleDownload = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const link = document.createElement('a');
+    link.download = `synapse-${roomId}-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
   return (
     <div className="whiteboard-container">
+      {!isConnected && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <p>Connecting to room...</p>
+        </div>
+      )}
       <Toolbar
         onClear={handleClear}
         onLeave={onLeave}
+        onDownload={handleDownload}
         roomId={roomId}
         userCount={users.size}
         isConnected={isConnected}
       />
       <div className="whiteboard-main">
         <Canvas
+          canvasRef={canvasRef}
           addObject={addObject}
           updateObject={updateObject}
           updateCursor={updateCursor}

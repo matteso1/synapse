@@ -6,13 +6,13 @@ import { renderObject, renderGrid, renderCursors, generateId } from '../lib/rend
 import type { Point, PathObject, AnyCanvasObject } from '../types';
 
 interface CanvasProps {
+    canvasRef: React.RefObject<HTMLCanvasElement>;
     addObject: (obj: AnyCanvasObject) => void;
     updateObject: (id: string, updates: Partial<AnyCanvasObject>) => void;
     updateCursor: (x: number, y: number) => void;
 }
 
-export function Canvas({ addObject, updateObject: _updateObject, updateCursor }: CanvasProps) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+export function Canvas({ canvasRef, addObject, updateObject: _updateObject, updateCursor }: CanvasProps) {
     const containerRef = useRef<HTMLDivElement>(null);
 
     const {
