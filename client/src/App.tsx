@@ -11,7 +11,10 @@ import './App.css';
 function App() {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [roomInput, setRoomInput] = useState('');
-
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem('synapse-username') || '';
+  });
+  const [joinError, setJoinError] = useState('');
 
   // Get room from URL or show join screen
   useEffect(() => {
@@ -33,13 +36,27 @@ function App() {
   };
 
   const handleJoinRoom = () => {
-    const room = roomInput.trim().toUpperCase() || generateRoomCode();
+    const room = roomInput.trim().toUpperCase();
+    if (!room) {
+      setJoinError('Please enter a room code to join');
+      return;
+    }
+    // Save username
+    if (userName.trim()) {
+      localStorage.setItem('synapse-username', userName.trim());
+    }
+    setJoinError('');
     setRoomId(room);
     window.history.pushState({}, '', `?room=${room}`);
   };
 
   const handleCreateRoom = () => {
+    // Save username
+    if (userName.trim()) {
+      localStorage.setItem('synapse-username', userName.trim());
+    }
     const room = generateRoomCode();
+    setJoinError('');
     setRoomId(room);
     window.history.pushState({}, '', `?room=${room}`);
   };
@@ -47,6 +64,7 @@ function App() {
   const handleLeaveRoom = () => {
     setRoomId(null);
     setRoomInput('');
+    setJoinError('');
     // Clear URL
     window.history.pushState({}, '', window.location.pathname);
     // Clear local canvas state
@@ -60,23 +78,29 @@ function App() {
     return <JoinScreen
       roomInput={roomInput}
       setRoomInput={setRoomInput}
+      userName={userName}
+      setUserName={setUserName}
       onJoin={handleJoinRoom}
       onCreate={handleCreateRoom}
+      error={joinError}
     />;
   }
 
-  return <WhiteboardRoom roomId={roomId} onLeave={handleLeaveRoom} />;
+  return <WhiteboardRoom roomId={roomId} userName={userName} onLeave={handleLeaveRoom} />;
 }
 
 // Join/Create room screen
 interface JoinScreenProps {
   roomInput: string;
   setRoomInput: (value: string) => void;
+  userName: string;
+  setUserName: (value: string) => void;
   onJoin: () => void;
   onCreate: () => void;
+  error: string;
 }
 
-function JoinScreen({ roomInput, setRoomInput, onJoin, onCreate }: JoinScreenProps) {
+function JoinScreen({ roomInput, setRoomInput, userName, setUserName, onJoin, onCreate, error }: JoinScreenProps) {
   return (
     <div className="join-screen">
       <div className="join-container">
@@ -98,11 +122,22 @@ function JoinScreen({ roomInput, setRoomInput, onJoin, onCreate }: JoinScreenPro
         <div className="join-form">
           <input
             type="text"
+            placeholder="Your name (optional)"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            className="name-input"
+          />
+          <input
+            type="text"
             placeholder="Enter room code..."
             value={roomInput}
-            onChange={(e) => setRoomInput(e.target.value)}
+            onChange={(e) => {
+              setRoomInput(e.target.value);
+              if (error) setRoomInput(e.target.value); // Clear error on type
+            }}
             onKeyDown={(e) => e.key === 'Enter' && onJoin()}
           />
+          {error && <p className="error-message">{error}</p>}
           <div className="button-group">
             <button className="btn-secondary" onClick={onJoin}>
               Join Room
@@ -135,10 +170,11 @@ function JoinScreen({ roomInput, setRoomInput, onJoin, onCreate }: JoinScreenPro
 // Main whiteboard room
 interface WhiteboardRoomProps {
   roomId: string;
+  userName: string;
   onLeave: () => void;
 }
 
-function WhiteboardRoom({ roomId, onLeave }: WhiteboardRoomProps) {
+function WhiteboardRoom({ roomId, userName, onLeave }: WhiteboardRoomProps) {
   const { users } = useCanvasStore();
 
   // Connect to Yjs
@@ -150,6 +186,7 @@ function WhiteboardRoom({ roomId, onLeave }: WhiteboardRoomProps) {
     updateCursor
   } = useYjs({
     roomId,
+    userName: userName.trim() || undefined,
     serverUrl: import.meta.env.VITE_WS_URL || 'ws://localhost:1234'
   });
 

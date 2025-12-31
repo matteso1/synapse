@@ -503,3 +503,142 @@ body {
     max-width: 120px;
   }
 }
+
+/* Error message */
+.error-message {
+  color: var(--danger);
+  font-size: 0.9rem;
+  text-align: left;
+  margin-top: -0.5rem;
+}
+
+/* Name input styling */
+.name-input {
+  border-color: rgba(78, 205, 196, 0.3) !important;
+}
+
+.name-input:focus {
+  border-color: var(--accent-primary) !important;
+}
+
+/* Enhanced Mobile Responsive */
+@media (max-width: 600px) {
+  .join-container {
+    padding: 1.5rem;
+    width: 95%;
+    border-radius: var(--radius-md);
+  }
+
+  .logo h1 {
+    font-size: 1.8rem;
+  }
+
+  .logo svg {
+    width: 45px;
+    height: 45px;
+  }
+
+  .tagline {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .join-form input {
+    padding: 0.875rem 1rem;
+    font-size: 16px;
+    /* Prevents zoom on iOS */
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .features {
+    gap: 1rem;
+  }
+
+  .feature {
+    font-size: 0.8rem;
+  }
+
+  /* Toolbar mobile */
+  .toolbar {
+    height: auto;
+    min-height: var(--toolbar-height);
+    flex-wrap: wrap;
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .toolbar-section {
+    border-right: none;
+    padding: 0.25rem;
+  }
+
+  .toolbar-section:last-child {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tool-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .color-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .room-code {
+    padding: 0.5rem;
+  }
+
+  .room-label {
+    display: none;
+  }
+
+  /* Canvas touch optimization */
+  .canvas-container {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .whiteboard-main {
+    height: calc(100vh - 120px);
+  }
+}
+
+/* Very small screens */
+@media (max-width: 400px) {
+  .toolbar-group {
+    gap: 2px;
+    padding: 2px;
+  }
+
+  .tool-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .color-palette {
+    max-width: 100px;
+  }
+
+  .color-button {
+    width: 26px;
+    height: 26px;
+  }
+
+  .stroke-widths {
+    display: none;
+  }
+}

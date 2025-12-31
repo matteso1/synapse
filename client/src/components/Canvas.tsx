@@ -195,6 +195,89 @@ export function Canvas({ addObject, updateObject: _updateObject, updateCursor }:
         setLastPanPoint(null);
     }, [isDrawing, currentPath, addObject]);
 
+    // Touch event handlers for mobile support
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        if (e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const screenX = touch.clientX - rect.left;
+        const screenY = touch.clientY - rect.top;
+        const point = screenToCanvas(screenX, screenY);
+
+        if (tool === 'pan') {
+            setLastPanPoint({ x: touch.clientX, y: touch.clientY });
+            return;
+        }
+
+        if (tool === 'pen' || tool === 'eraser') {
+            setIsDrawing(true);
+            const pathId = generateId();
+            const newPath: PathObject = {
+                id: pathId,
+                type: 'path',
+                color: tool === 'eraser' ? '#1a1a2e' : color,
+                strokeWidth: tool === 'eraser' ? strokeWidth * 3 : strokeWidth,
+                createdBy: localUserId || 'unknown',
+                createdAt: Date.now(),
+                points: [point],
+            };
+            setCurrentPath(newPath);
+        }
+    }, [tool, color, strokeWidth, localUserId, screenToCanvas]);
+
+    const handleTouchMove = useCallback((e: React.TouchEvent) => {
+        if (e.touches.length !== 1) return;
+        e.preventDefault(); // Prevent scrolling
+        const touch = e.touches[0];
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const screenX = touch.clientX - rect.left;
+        const screenY = touch.clientY - rect.top;
+        const point = screenToCanvas(screenX, screenY);
+
+        // Update cursor position
+        updateCursor(point.x, point.y);
+
+        // Handle panning
+        if (lastPanPoint && tool === 'pan') {
+            const dx = touch.clientX - lastPanPoint.x;
+            const dy = touch.clientY - lastPanPoint.y;
+            setPanOffset({
+                x: panOffset.x + dx,
+                y: panOffset.y + dy,
+            });
+            setLastPanPoint({ x: touch.clientX, y: touch.clientY });
+            return;
+        }
+
+        // Handle drawing
+        if (isDrawing && currentPath) {
+            setCurrentPath({
+                ...currentPath,
+                points: [...currentPath.points, point],
+            });
+        }
+    }, [isDrawing, currentPath, tool, lastPanPoint, panOffset, screenToCanvas, updateCursor, setPanOffset]);
+
+    const handleTouchEnd = useCallback(() => {
+        if (tool === 'pan') {
+            setLastPanPoint(null);
+            return;
+        }
+
+        if (isDrawing && currentPath && currentPath.points.length > 1) {
+            addObject(currentPath);
+        }
+
+        setIsDrawing(false);
+        setCurrentPath(null);
+    }, [isDrawing, currentPath, tool, addObject]);
+
     // Handle wheel zoom
     const handleWheel = useCallback((e: React.WheelEvent) => {
         e.preventDefault();
@@ -237,6 +320,9 @@ export function Canvas({ addObject, updateObject: _updateObject, updateCursor }:
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
                 onWheel={handleWheel}
                 style={{
                     display: 'block',

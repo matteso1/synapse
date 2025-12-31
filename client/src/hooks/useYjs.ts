@@ -8,10 +8,11 @@ import { useCanvasStore } from '../stores/canvasStore';
 
 interface UseYjsOptions {
     roomId: string;
+    userName?: string;
     serverUrl?: string;
 }
 
-export function useYjs({ roomId, serverUrl = 'ws://localhost:1234' }: UseYjsOptions) {
+export function useYjs({ roomId, userName, serverUrl = 'ws://localhost:1234' }: UseYjsOptions) {
     const [isConnected, setIsConnected] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
 
@@ -48,9 +49,10 @@ export function useYjs({ roomId, serverUrl = 'ws://localhost:1234' }: UseYjsOpti
         const userColor = colors[Math.floor(Math.random() * colors.length)];
 
         // Set awareness (user presence)
+        const displayName = userName || `User ${localUserId.slice(-4)}`;
         provider.awareness.setLocalStateField('user', {
             id: localUserId,
-            name: `User ${localUserId.slice(-4)}`,
+            name: displayName,
             color: userColor,
             cursor: null,
         });
