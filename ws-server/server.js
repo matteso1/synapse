@@ -25,6 +25,21 @@ class WSSharedDoc extends Y.Doc {
         this.conns = new Map();
         this.awareness = new awarenessProtocol.Awareness(this);
 
+        // Broadcast document updates to all connected clients
+        this.on('update', (update, origin) => {
+            const encoder = encoding.createEncoder();
+            encoding.writeVarUint(encoder, MESSAGE_SYNC);
+            syncProtocol.writeUpdate(encoder, update);
+            const message = encoding.toUint8Array(encoder);
+
+            this.conns.forEach((_, conn) => {
+                // Don't send back to the origin connection
+                if (conn !== origin && conn.readyState === 1) {
+                    conn.send(message);
+                }
+            });
+        });
+
         this.awareness.on('update', ({ added, updated, removed }, conn) => {
             const changedClients = added.concat(updated, removed);
             if (conn !== null) {
