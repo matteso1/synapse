@@ -3,7 +3,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { useCanvasStore } from '../stores/canvasStore';
 import { renderObject, renderGrid, renderCursors, generateId } from '../lib/renderer';
-import type { Point, PathObject, AnyCanvasObject } from '../types';
+import type { Point, PathObject, AnyCanvasObject, RectangleObject, EllipseObject, LineObject, ArrowObject } from '../types';
 
 interface CanvasProps {
     canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -30,6 +30,8 @@ export function Canvas({ canvasRef, addObject, updateObject: _updateObject, upda
 
     const [isDrawing, setIsDrawing] = useState(false);
     const [currentPath, setCurrentPath] = useState<PathObject | null>(null);
+    const [currentShape, setCurrentShape] = useState<AnyCanvasObject | null>(null);
+    const [shapeStart, setShapeStart] = useState<Point | null>(null);
     const [lastPanPoint, setLastPanPoint] = useState<Point | null>(null);
 
     // Convert screen coordinates to canvas coordinates
@@ -88,6 +90,11 @@ export function Canvas({ canvasRef, addObject, updateObject: _updateObject, upda
                 renderObject(ctx, currentPath);
             }
 
+            // Render current shape preview
+            if (currentShape) {
+                renderObject(ctx, currentShape);
+            }
+
             ctx.restore();
 
             // Render grid ON TOP of objects so eraser doesn't cover it
@@ -102,7 +109,7 @@ export function Canvas({ canvasRef, addObject, updateObject: _updateObject, upda
         render();
 
         return () => cancelAnimationFrame(animationId);
-    }, [objects, currentPath, zoom, panOffset, users, localUserId]);
+    }, [objects, currentPath, currentShape, zoom, panOffset, users, localUserId]);
 
     // Handle mouse down
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -132,6 +139,12 @@ export function Canvas({ canvasRef, addObject, updateObject: _updateObject, upda
                 points: [point],
             };
             setCurrentPath(newPath);
+        }
+
+        // Shape tools
+        if (['rectangle', 'ellipse', 'line', 'arrow'].includes(tool)) {
+            setIsDrawing(true);
+            setShapeStart(point);
         }
     }, [tool, color, strokeWidth, localUserId, screenToCanvas]);
 
@@ -167,7 +180,61 @@ export function Canvas({ canvasRef, addObject, updateObject: _updateObject, upda
                 points: [...currentPath.points, point],
             });
         }
-    }, [isDrawing, currentPath, tool, lastPanPoint, panOffset, screenToCanvas, updateCursor, setPanOffset]);
+
+        // Handle shape preview
+        if (isDrawing && shapeStart && ['rectangle', 'ellipse', 'line', 'arrow'].includes(tool)) {
+            const shapeId = 'preview';
+            const baseShape = {
+                id: shapeId,
+                color,
+                strokeWidth,
+                createdBy: localUserId || 'unknown',
+                createdAt: Date.now(),
+            };
+
+            if (tool === 'rectangle') {
+                const newShape: RectangleObject = {
+                    ...baseShape,
+                    type: 'rectangle',
+                    x: Math.min(shapeStart.x, point.x),
+                    y: Math.min(shapeStart.y, point.y),
+                    width: Math.abs(point.x - shapeStart.x),
+                    height: Math.abs(point.y - shapeStart.y),
+                };
+                setCurrentShape(newShape);
+            } else if (tool === 'ellipse') {
+                const newShape: EllipseObject = {
+                    ...baseShape,
+                    type: 'ellipse',
+                    cx: (shapeStart.x + point.x) / 2,
+                    cy: (shapeStart.y + point.y) / 2,
+                    rx: Math.abs(point.x - shapeStart.x) / 2,
+                    ry: Math.abs(point.y - shapeStart.y) / 2,
+                };
+                setCurrentShape(newShape);
+            } else if (tool === 'line') {
+                const newShape: LineObject = {
+                    ...baseShape,
+                    type: 'line',
+                    x1: shapeStart.x,
+                    y1: shapeStart.y,
+                    x2: point.x,
+                    y2: point.y,
+                };
+                setCurrentShape(newShape);
+            } else if (tool === 'arrow') {
+                const newShape: ArrowObject = {
+                    ...baseShape,
+                    type: 'arrow',
+                    x1: shapeStart.x,
+                    y1: shapeStart.y,
+                    x2: point.x,
+                    y2: point.y,
+                };
+                setCurrentShape(newShape);
+            }
+        }
+    }, [isDrawing, currentPath, tool, lastPanPoint, panOffset, screenToCanvas, updateCursor, setPanOffset, shapeStart, color, strokeWidth, localUserId]);
 
     // Handle mouse up
     const handleMouseUp = useCallback(() => {
@@ -181,19 +248,36 @@ export function Canvas({ canvasRef, addObject, updateObject: _updateObject, upda
             addObject(currentPath);
         }
 
+        // Finalize shape
+        if (isDrawing && currentShape && currentShape.id !== 'preview') {
+            addObject(currentShape);
+        } else if (isDrawing && currentShape) {
+            // Create final shape with real ID
+            const finalShape = { ...currentShape, id: generateId() };
+            addObject(finalShape);
+        }
+
         setIsDrawing(false);
         setCurrentPath(null);
-    }, [isDrawing, currentPath, tool, addObject]);
+        setCurrentShape(null);
+        setShapeStart(null);
+    }, [isDrawing, currentPath, currentShape, tool, addObject]);
 
     // Handle mouse leave
     const handleMouseLeave = useCallback(() => {
         if (isDrawing && currentPath && currentPath.points.length > 1) {
             addObject(currentPath);
         }
+        if (isDrawing && currentShape) {
+            const finalShape = { ...currentShape, id: generateId() };
+            addObject(finalShape);
+        }
         setIsDrawing(false);
         setCurrentPath(null);
+        setCurrentShape(null);
+        setShapeStart(null);
         setLastPanPoint(null);
-    }, [isDrawing, currentPath, addObject]);
+    }, [isDrawing, currentPath, currentShape, addObject]);
 
     // Touch event handlers for mobile support
     const handleTouchStart = useCallback((e: React.TouchEvent) => {

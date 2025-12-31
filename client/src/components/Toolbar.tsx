@@ -13,7 +13,11 @@ import {
     Download,
     Link,
     Undo2,
-    Redo2
+    Redo2,
+    Square,
+    Circle,
+    Minus,
+    ArrowRight
 } from 'lucide-react';
 import { useCanvasStore, COLOR_PALETTE, STROKE_WIDTHS } from '../stores/canvasStore';
 import type { Tool } from '../types';
@@ -42,6 +46,10 @@ export function Toolbar({ onClear, onLeave, onDownload, onUndo, onRedo, roomId, 
     const tools: { id: Tool; icon: React.ReactNode; label: string }[] = [
         { id: 'pen', icon: <Pencil size={20} />, label: 'Pen' },
         { id: 'eraser', icon: <Eraser size={20} />, label: 'Eraser' },
+        { id: 'rectangle', icon: <Square size={20} />, label: 'Rectangle' },
+        { id: 'ellipse', icon: <Circle size={20} />, label: 'Ellipse' },
+        { id: 'line', icon: <Minus size={20} />, label: 'Line' },
+        { id: 'arrow', icon: <ArrowRight size={20} />, label: 'Arrow' },
         { id: 'pan', icon: <Hand size={20} />, label: 'Pan' },
     ];
 
