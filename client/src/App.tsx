@@ -16,12 +16,13 @@ function App() {
   });
   const [joinError, setJoinError] = useState('');
 
-  // Get room from URL or show join screen
+  // Get room from URL and pre-fill (but don't auto-join - let user enter name)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const room = params.get('room');
     if (room) {
-      setRoomId(room);
+      // Pre-fill the room input but don't auto-join
+      setRoomInput(room);
     }
   }, []);
 
