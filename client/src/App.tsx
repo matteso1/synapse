@@ -147,21 +147,6 @@ function JoinScreen({ roomInput, setRoomInput, userName, setUserName, onJoin, on
             </button>
           </div>
         </div>
-
-        <div className="features">
-          <div className="feature">
-            <span className="feature-icon">🎨</span>
-            <span>Freehand Drawing</span>
-          </div>
-          <div className="feature">
-            <span className="feature-icon">👥</span>
-            <span>Real-time Cursors</span>
-          </div>
-          <div className="feature">
-            <span className="feature-icon">⚡</span>
-            <span>Instant Sync</span>
-          </div>
-        </div>
       </div>
     </div>
   );
