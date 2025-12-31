@@ -1,6 +1,6 @@
 // Synapse - Real-time Collaborative Whiteboard
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
 import { UserPresence } from './components/UserPresence';
