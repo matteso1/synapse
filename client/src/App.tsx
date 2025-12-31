@@ -170,12 +170,35 @@ function WhiteboardRoom({ roomId, userName, onLeave }: WhiteboardRoomProps) {
     addObject,
     updateObject,
     clearObjects,
-    updateCursor
+    updateCursor,
+    undo,
+    redo
   } = useYjs({
     roomId,
     userName: userName.trim() || undefined,
     serverUrl: import.meta.env.VITE_WS_URL || 'ws://localhost:1234'
   });
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
 
   const handleClear = () => {
     if (confirm('Clear the entire canvas? This cannot be undone.')) {
@@ -205,6 +228,8 @@ function WhiteboardRoom({ roomId, userName, onLeave }: WhiteboardRoomProps) {
         onClear={handleClear}
         onLeave={onLeave}
         onDownload={handleDownload}
+        onUndo={undo}
+        onRedo={redo}
         roomId={roomId}
         userCount={users.size}
         isConnected={isConnected}

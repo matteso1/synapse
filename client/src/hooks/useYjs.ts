@@ -1,6 +1,6 @@
 // Yjs integration hook for collaborative state sync
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import type { AnyCanvasObject, UserPresence } from '../types';
@@ -19,6 +19,7 @@ export function useYjs({ roomId, userName, serverUrl = 'ws://localhost:1234' }: 
     const ydocRef = useRef<Y.Doc | null>(null);
     const providerRef = useRef<WebsocketProvider | null>(null);
     const objectsMapRef = useRef<Y.Map<any> | null>(null);
+    const undoManagerRef = useRef<Y.UndoManager | null>(null);
 
     const { setObjects, setUsers, setLocalUserId } = useCanvasStore();
 
@@ -30,6 +31,10 @@ export function useYjs({ roomId, userName, serverUrl = 'ws://localhost:1234' }: 
         // Create shared objects map
         const objectsMap = ydoc.getMap('objects');
         objectsMapRef.current = objectsMap;
+
+        // Create UndoManager to track changes
+        const undoManager = new Y.UndoManager(objectsMap);
+        undoManagerRef.current = undoManager;
 
         // Connect to WebSocket server
         const provider = new WebsocketProvider(
@@ -116,6 +121,7 @@ export function useYjs({ roomId, userName, serverUrl = 'ws://localhost:1234' }: 
         // Cleanup
         return () => {
             provider.awareness.off('change', handleAwarenessChange);
+            undoManager.destroy();
             provider.disconnect();
             ydoc.destroy();
         };
@@ -165,6 +171,20 @@ export function useYjs({ roomId, userName, serverUrl = 'ws://localhost:1234' }: 
         }
     };
 
+    // Undo last action
+    const undo = useCallback(() => {
+        if (undoManagerRef.current) {
+            undoManagerRef.current.undo();
+        }
+    }, []);
+
+    // Redo last undone action
+    const redo = useCallback(() => {
+        if (undoManagerRef.current) {
+            undoManagerRef.current.redo();
+        }
+    }, []);
+
     return {
         isConnected,
         connectionStatus,
@@ -173,6 +193,8 @@ export function useYjs({ roomId, userName, serverUrl = 'ws://localhost:1234' }: 
         removeObject,
         clearObjects,
         updateCursor,
+        undo,
+        redo,
         ydoc: ydocRef.current,
         provider: providerRef.current,
     };

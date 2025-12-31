@@ -11,7 +11,9 @@ import {
     Copy,
     Check,
     Download,
-    Link
+    Link,
+    Undo2,
+    Redo2
 } from 'lucide-react';
 import { useCanvasStore, COLOR_PALETTE, STROKE_WIDTHS } from '../stores/canvasStore';
 import type { Tool } from '../types';
@@ -20,17 +22,18 @@ interface ToolbarProps {
     onClear: () => void;
     onLeave: () => void;
     onDownload: () => void;
+    onUndo: () => void;
+    onRedo: () => void;
     roomId: string;
     userCount: number;
     isConnected: boolean;
 }
 
-export function Toolbar({ onClear, onLeave, onDownload, roomId, userCount, isConnected }: ToolbarProps) {
+export function Toolbar({ onClear, onLeave, onDownload, onUndo, onRedo, roomId, userCount, isConnected }: ToolbarProps) {
     const { tool, setTool, color, setColor, strokeWidth, setStrokeWidth, zoom } = useCanvasStore();
     const [copied, setCopied] = useState(false);
 
     const copyInviteLink = async () => {
-        // Copy full invite URL to clipboard
         await navigator.clipboard.writeText(window.location.href);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -48,6 +51,16 @@ export function Toolbar({ onClear, onLeave, onDownload, roomId, userCount, isCon
             <div className="toolbar-section">
                 <button className="tool-button leave" onClick={onLeave} title="Leave Room">
                     <LogOut size={20} />
+                </button>
+            </div>
+
+            {/* Undo/Redo */}
+            <div className="toolbar-section">
+                <button className="tool-button" onClick={onUndo} title="Undo (Ctrl+Z)">
+                    <Undo2 size={20} />
+                </button>
+                <button className="tool-button" onClick={onRedo} title="Redo (Ctrl+Y)">
+                    <Redo2 size={20} />
                 </button>
             </div>
 
